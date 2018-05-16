@@ -1,9 +1,7 @@
 #maxint=30.
 
 row(0..21).
-
 column(0..9). 
-
 cell(R,C):- row(R),column(C).
 
 
@@ -12,7 +10,6 @@ cell(R,C):- row(R),column(C).
 % ( GUESS ) 
 
 % place shapes in the right position --> Place(ID_PIECE,R_POS,C_POS)
-
 place(P,R,C) v notPlace(P,R,C) :- shape(P,_,_),cell(R,C).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,6 +17,22 @@ place(P,R,C) v notPlace(P,R,C) :- shape(P,_,_),cell(R,C).
 % fill cell occupied by the shape based on its placement and on shape configuration --> occupied(R_POS,C_POS,ID_PIECE)
 % overlap shape matrix to board matrix
 % see Readme for more information about this point
-
 occupied(R,C,S) :- place(S,R,C).
 occupied(R,C,S) :- place(S,R1,C1), shape(S,R2,C2), X=R1+R2, Y=C1+C2, R=X-2,C=Y-2.
+
+% ( CECK ) 
+
+%1 this constraint avoid that the shape in input will be placed in two different positions
+:- place(S,R1,_), place(S,R2,_), R1 != R2.
+:- place(S,_,C1), place(S,_,C2), C1 != C2.
+ 
+
+%2 this constraint avoid that the new piece occupy a full cell in the current configuration
+:- occupied(R,C,S1), fullCell(X,Y,S2), S1 != S2.
+
+%3 All shapes must be placed, avoid to have model with only predicates "notPlace" 
+placed(S) :- place(S,_,_).
+:- shape(S,_,_), not placed(S).
+
+%4 every shape cannot occupy cell outside from the main board
+:- occupied(R,C,_), not cell(R,C).

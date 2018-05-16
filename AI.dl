@@ -1,0 +1,25 @@
+#maxint=30.
+
+row(0..21).
+
+column(0..9). 
+
+cell(R,C):- row(R),column(C).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ( GUESS ) 
+
+% place shapes in the right position --> Place(ID_PIECE,R_POS,C_POS)
+
+place(P,R,C) v notPlace(P,R,C) :- shape(P,_,_),cell(R,C).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% fill cell occupied by the shape based on its placement and on shape configuration --> occupied(R_POS,C_POS,ID_PIECE)
+% overlap shape matrix to board matrix
+% see Readme for more information about this point
+
+occupied(R,C,S) :- place(S,R,C).
+occupied(R,C,S) :- place(S,R1,C1), shape(S,R2,C2), X=R1+R2, Y=C1+C2, R=X-2,C=Y-2.

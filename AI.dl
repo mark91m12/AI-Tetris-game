@@ -7,7 +7,7 @@ cell(R,C):- row(R),column(C).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% ( GUEPP ) 
+% ( GUESS ) 
 
 % place shapes in the right position --> Place(ID_PIECE,R_POP,C_POP)
 place(P,R,C) v notPlace(P,R,C) :- shape(P,_,_),cell(R,C).
@@ -59,3 +59,29 @@ placed(P) :- place(P,_,_).
  
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% ( WEAK CONPTRAINT )  
+
+% we have 5 weak constraints from 5 (high priority) to 1 (low priority)
+
+% lvl 5 avoid leaving hanging pieces, minimize voids (create better configurations)
+:~minimum(R1,C,P),emptyCell(R2,C), R2=R1-1 . [1:5]
+:~minimum(R1,C,P),emptyCell(R2,C), R2<R1 . [1:2]
+ 
+
+% lvl 4 maximize occupied rows (delete rows make more points)
+% a row is totally full if the number of full cells is equal to 10 (all columns)
+notFullRow(R):-numberFullCell(R,N),N != 10.
+:~notFullRow(R). [1:4]
+
+
+% lvl 3 place the current piece as lower as possible (minimize configuration rows)
+occupiedRowbyConfig(R):-fullCell(R,_,_).
+occupiedRow(R):-occupied(R,_,_),not occupiedRowbyConfig(R).
+:~occupiedRow(R). [1:3]
+
+
+% lvl 1 minimize empty cell on occupied row
+void(R,C):-emptyCell(R,C),occupiedRow(R1),R=R1.
+:~void(R,C). [1:1]

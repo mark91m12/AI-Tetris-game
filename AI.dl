@@ -7,32 +7,55 @@ cell(R,C):- row(R),column(C).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% ( GUESS ) 
+% ( GUEPP ) 
 
-% place shapes in the right position --> Place(ID_PIECE,R_POS,C_POS)
+% place shapes in the right position --> Place(ID_PIECE,R_POP,C_POP)
 place(P,R,C) v notPlace(P,R,C) :- shape(P,_,_),cell(R,C).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% fill cell occupied by the shape based on its placement and on shape configuration --> occupied(R_POS,C_POS,ID_PIECE)
+% fill cell occupied by the shape based on its placement and on shape configuration --> occupied(R_POP,C_POP,ID_PIECE)
 % overlap shape matrix to board matrix
 % see Readme for more information about this point
-occupied(R,C,S) :- place(S,R,C).
-occupied(R,C,S) :- place(S,R1,C1), shape(S,R2,C2), X=R1+R2, Y=C1+C2, R=X-2,C=Y-2.
+occupied(R,C,P) :- place(P,R,C).
+occupied(R,C,P) :- place(P,R1,C1), shape(P,R2,C2), X=R1+R2, Y=C1+C2, R=X-2,C=Y-2.
+
+% return all occupied cell
+occupiedIndex(R,C):-fullCell(R,C,_).
+occupiedIndex(R,C):-occupied(R,C,_).
+
+% return all empty cell
+emptyCell(R,C):-cell(R,C),not occupiedIndex(R,C).
+
+% return lower components of the input piece
+minimum(R,C,P):-occupied(R,C,P), not lower(R,C,P).
+lower(R1,C,P):-occupied(R1,C,P),occupied(R2,C,P), R2<R1.
+
+% return number N of full cell for the row R
+numberFullCell(R,N) :- row(R),#count{C:occupiedIndex(R,C)}=N,#int(N).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ( CECK ) 
 
 %1 this constraint avoid that the shape in input will be placed in two different positions
-:- place(S,R1,_), place(S,R2,_), R1 != R2.
-:- place(S,_,C1), place(S,_,C2), C1 != C2.
+:- place(P,R1,_), place(P,R2,_), R1 != R2.
+:- place(P,_,C1), place(P,_,C2), C1 != C2.
  
 
 %2 this constraint avoid that the new piece occupy a full cell in the current configuration
-:- occupied(R,C,S1), fullCell(X,Y,S2), S1 != S2.
+:- occupied(R,C,P1), fullCell(R,C,P2), P1 != P2.
 
 %3 All shapes must be placed, avoid to have model with only predicates "notPlace" 
-placed(S) :- place(S,_,_).
-:- shape(S,_,_), not placed(S).
+placed(P) :- place(P,_,_).
+:- shape(P,_,_), not placed(P).
 
 %4 every shape cannot occupy cell outside from the main board
 :- occupied(R,C,_), not cell(R,C).
+
+ 
+%5 not possible to place a piece if there is some configuration in the same column 
+:-occupied(R1,C,_), fullCell(R2,C,_), R2>R1.
+ 
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
